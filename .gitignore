@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+ENV/
+env/
+pip-wheel-metadata/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# VS Code / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
