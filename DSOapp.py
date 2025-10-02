@@ -326,6 +326,6 @@ with st.expander("ℹ️ How it works"):
     st.write("""
     - Select a **month number (1–12)**. The app finds constellations in the **Visibility** table with that month and **Optimal = 1**.
     - It then returns matching rows from **DSO** and **Stars** whose **Constellation** matches those constellations.
-    - For **DSO**: returns Code, Name, Type, Constellation, and Hour.
-    - For **Stars**: returns Code, Name, Stars, 1Color, 2Color, Constellation, and Hour.
+    - For **DSO**: returns Constelation, Code, Name, Type and Notes.
+    - For **Stars**: returns COnstellation, Code, Name, Stars and Notes.
     """)
