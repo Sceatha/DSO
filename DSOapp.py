@@ -85,7 +85,7 @@ def hour_fixer(hour, time):
 # --- Main App Logic ---
 
 st.set_page_config(page_title="DSO Visibility Browser", layout="wide", page_icon="🌌")
-st.title("🌌 DSO Visibility Browser")
+#st.title("🌌 DSO Visibility Browser")
 
 # DB selection
 default_db = os.path.join("data", "DSO.db")
