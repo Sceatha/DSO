@@ -219,11 +219,11 @@ if selected_specific_star or include_other_star:
 # Query 1: DSO x Visibility
 sql_dso = f'''
 SELECT
+    d."{DSO_Const}" AS Constellation,
     d."{DSO_Code}" AS Code,
     d."{DSO_Type}" AS Type,
     d."{DSO_Name}" AS Name,
     d."{DSO_Notes}" AS Notes,
-    d."{DSO_Const}" AS Constellation,
     v."{V_Hour}" AS Hour
 FROM "DSO" d
 JOIN "Visibility" v
@@ -256,12 +256,12 @@ if not (ck_messier or ck_caldwell or ck_other_dso):
 # Query 2: Stars x Visibility
 sql_stars = f'''
 SELECT
+    s."{S_Const}" AS Constellation,
     s."{S_Code}" AS Code,
     s."{S_Type}" AS Type,
     s."{S_Name}" AS Name,   
     s."{S_No}"   AS Stars,
     s."{S_Notes}" AS Notes,
-    s."{S_Const}" AS Constellation,
     v."{V_Hour}" AS Hour
 FROM "Stars" s
 JOIN "Visibility" v
