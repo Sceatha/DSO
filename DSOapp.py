@@ -4,20 +4,8 @@ import sqlite3
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="DSO Visibility Browser", layout="wide")
-st.title("🌌 DSO Visibility Browser")
-
-# --- DB selection ---
-default_db = os.path.join("data", "DSO.db")
-db_path = st.sidebar.text_input(
-    "SQLite DB path",
-    value=default_db,
-    help="Path to your SQLite database file (e.g., data/DSO.db)."
-)
-
-if not os.path.exists(db_path):
-    st.info(f"ℹ️ The file **{db_path}** was not found. Update the path above to point to your SQLite database.")
-
+# -- Definitions & Helpers ---
+# Database connection helpers
 @st.cache_resource(show_spinner=False)
 def get_conn(path: str):
     if not os.path.exists(path):
@@ -53,9 +41,9 @@ def empty_like(df):
     # preserves columns & dtypes
     return df.iloc[0:0]
 
-# --- Column width autosize helpers ---
+# Column width autosize helpers
 def _width_bucket(n_chars: int) -> str:
-    # tweak thresholds as you like
+    # tweak thresholds as you like for table column widths
     if n_chars <= 13:
         return "small"
     if n_chars <= 50:
@@ -85,12 +73,30 @@ def _auto_column_config(df):
         cfg[c] = st.column_config.Column(c, width=_width_bucket(longest))
     return cfg
 
+# Time helper, fixes hours for SDT or STD
 def hour_fixer(hour, time):
     if time == "Standard":
         hours = {1:'21:00 SDT', 2:'23:00 SDT', 3:'01:00 SDT', 4:'03:00 SDT'}
     elif time == "Daylight Saving":
         hours = {1:'22:00 DST', 2:'00:00 DST', 3:'02:00 DST', 4:'04:00 DST'}
     return hours[hour]
+
+
+# --- Main App Logic ---
+
+st.set_page_config(page_title="DSO Visibility Browser", layout="wide")
+st.title("🌌 DSO Visibility Browser")
+
+# DB selection
+default_db = os.path.join("data", "DSO.db")
+db_path = st.sidebar.text_input(
+    "SQLite DB path",
+    value=default_db,
+    help="Path to your SQLite database file (e.g., data/DSO.db)."
+)
+
+if not os.path.exists(db_path):
+    st.info(f"ℹ️ The file **{db_path}** was not found. Update the path above to point to your SQLite database.")
 
 # Try to connect
 try:
@@ -150,7 +156,7 @@ st.header(f"Showing results for **{month_name(month)}**.")
 
 mode = st.sidebar.selectbox("Local Time", options=["Standard", "Daylight Saving"], index=0, help="Show the time ranges in Standard Time (SDT) or Daylight Saving Time (DST).")
 
-q = st.sidebar.text_input("Search (name/type/constellation contains)", value="").strip()
+q = st.sidebar.text_input("Search", value="", help="Search terms in name, type, constellation").strip()
 
 st.sidebar.subheader("DSO Catalogues")
 ck_messier  = st.sidebar.checkbox("Messier",  value=True)
@@ -210,7 +216,7 @@ if selected_specific_star or include_other_star:
     startype_where = " OR ".join(pieces)
 # If all three are checked (default), the where becomes IN (...) OR NOT IN (...), i.e., no effective restriction.
 
-# --- Query 1: DSO x Visibility ---
+# Query 1: DSO x Visibility
 sql_dso = f'''
 SELECT
     d."{DSO_Code}" AS Code,
@@ -247,7 +253,7 @@ df = pd.read_sql_query(sql_dso, conn, params=params_dso)
 if not (ck_messier or ck_caldwell or ck_other_dso):
     df = empty_like(df)
 
-# --- Query 2: Stars x Visibility ---
+# Query 2: Stars x Visibility
 sql_stars = f'''
 SELECT
     s."{S_Code}" AS Code,
@@ -288,7 +294,7 @@ if not (ck_doubles or ck_giants or ck_other_star):
     df2 = empty_like(df2)
 
 
-# --- Layout
+# Layout
 tabs = st.tabs([hour_fixer(1, mode), hour_fixer(2, mode), hour_fixer(3, mode), hour_fixer(4, mode)])
 for idx, hour in enumerate([1,2,3,4]):
     with tabs[idx]:
