@@ -81,6 +81,11 @@ def hour_fixer(hour, time):
         hours = {1:'22:00 DST', 2:'00:00 DST', 3:'02:00 DST', 4:'04:00 DST'}
     return hours[hour]
 
+# Row height calculator
+def df_auto_height(n_rows: int, row_px: int = 35, header_px: int = 38,
+                   padding_px: int = 16, max_px: int = 2000) -> int:
+    """Rough but effective height calculator for st.dataframe."""
+    return min(header_px + n_rows * row_px + padding_px, max_px)
 
 # --- Main App Logic ---
 
@@ -300,10 +305,10 @@ for idx, hour in enumerate([1,2,3,4]):
     with tabs[idx]:
         st.caption("DSO Results")
         dso_view = df[df["Hour"] == hour].drop(columns="Hour", errors="ignore")
-        st.dataframe(dso_view, hide_index=True, width='stretch', column_config=_auto_column_config(dso_view),)
+        st.dataframe(dso_view, hide_index=True, width='stretch', column_config=_auto_column_config(dso_view), height=df_auto_height(len(dso_view)),)
         st.caption("Star Results")
         star_view = df2[df2["Hour"] == hour].drop(columns="Hour", errors="ignore")
-        st.dataframe(star_view, hide_index=True, width='stretch', column_config=_auto_column_config(star_view),)
+        st.dataframe(star_view, hide_index=True, width='stretch', column_config=_auto_column_config(star_view), height=df_auto_height(len(star_view)),)
 
 
 st.sidebar.metric("DSO Matches", len(df))
