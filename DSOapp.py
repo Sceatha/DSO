@@ -111,7 +111,7 @@ except Exception:
 
 # Validate required tables/columns
 required = {
-    "DSO": ["Code", "Name", "Type", "Notes", "Constellation", "Catalogue"],
+    "DSO": ["Code", "Name", "Type", "Notes", "Constellation", "Catalogue", "Book"],
     "Visibility": ["Constellation", "Month", "Hour", "Optimal"],
     "Stars": ["Code", "Name", "Type", "Constellation", "Stars", "Notes"],
 }
@@ -135,6 +135,7 @@ DSO_Type = get_actual_col_name(conn, "DSO", "Type")
 DSO_Notes = get_actual_col_name(conn, "DSO", "Notes")
 DSO_Const = get_actual_col_name(conn, "DSO", "Constellation")
 DSO_Catalogue = get_actual_col_name(conn, "DSO", "Catalogue")
+DSO_Book = get_actual_col_name(conn, "DSO", "Book")
 
 S_Code = get_actual_col_name(conn, "Stars", "Code")
 S_Name = get_actual_col_name(conn, "Stars", "Name")
@@ -229,6 +230,7 @@ SELECT
     d."{DSO_Type}" AS Type,
     d."{DSO_Name}" AS Name,
     d."{DSO_Notes}" AS Notes,
+    d."{DSO_Book}" AS Book,
     v."{V_Hour}" AS Hour
 FROM "DSO" d
 JOIN "Visibility" v
@@ -304,8 +306,30 @@ tabs = st.tabs([hour_fixer(1, mode), hour_fixer(2, mode), hour_fixer(3, mode), h
 for idx, hour in enumerate([1,2,3,4]):
     with tabs[idx]:
         st.caption("DSO Results")
-        dso_view = df[df["Hour"] == hour].drop(columns="Hour", errors="ignore")
-        st.dataframe(dso_view, hide_index=True, width='stretch', column_config=_auto_column_config(dso_view), height=df_auto_height(len(dso_view)),)
+        dso_rows_idx = df.index[df["Hour"] == hour]
+        dso_view = df.loc[dso_rows_idx].drop(columns=["Hour", "Book"], errors="ignore")
+        if "Book" in df.columns:
+            flag = df.loc[dso_rows_idx, "Book"].fillna(0).ne(0)   # True where Book != 0
+        else:
+            # If "Book" might be missing, fall back to "no highlights"
+            flag = pd.Series(False, index=dso_rows_idx)
+        
+        # Build a one-shot style frame (fast!)
+        dso_styles = pd.DataFrame("", index=dso_view.index, columns=dso_view.columns)
+        dso_styles.loc[flag, :] = "background-color: rgba(56, 189, 248, 0.14)"  # highlight entire row
+        dso_styled = dso_view.style.apply(lambda _: dso_styles, axis=None)    
+        st.dataframe(
+            dso_styled,
+            hide_index=True,
+            width="stretch",
+            column_config=_auto_column_config(dso_view),
+            height=df_auto_height(len(dso_view)),
+        )
+            
+        
+        # dso_view = df[df["Hour"] == hour].drop(columns="Hour", errors="ignore")
+        
+        #st.dataframe(dso_view, hide_index=True, width='stretch', column_config=_auto_column_config(dso_view), height=df_auto_height(len(dso_view)),)
         st.caption("Star Results")
         star_view = df2[df2["Hour"] == hour].drop(columns="Hour", errors="ignore")
         st.dataframe(star_view, hide_index=True, width='stretch', column_config=_auto_column_config(star_view), height=df_auto_height(len(star_view)),)
