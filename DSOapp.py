@@ -325,11 +325,9 @@ for idx, hour in enumerate([1,2,3,4]):
             column_config=_auto_column_config(dso_view),
             height=df_auto_height(len(dso_view)),
         )
-            
-        
         # dso_view = df[df["Hour"] == hour].drop(columns="Hour", errors="ignore")
-        
         #st.dataframe(dso_view, hide_index=True, width='stretch', column_config=_auto_column_config(dso_view), height=df_auto_height(len(dso_view)),)
+        
         st.caption("Star Results")
         star_view = df2[df2["Hour"] == hour].drop(columns="Hour", errors="ignore")
         st.dataframe(star_view, hide_index=True, width='stretch', column_config=_auto_column_config(star_view), height=df_auto_height(len(star_view)),)
